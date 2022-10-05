@@ -9,6 +9,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.net.Uri
 import android.os.Bundle
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.NotificationCompat
 import kotlinx.android.synthetic.main.activity_main.*
@@ -22,6 +23,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var notificationManager: NotificationManager
     private lateinit var pendingIntent: PendingIntent
     private lateinit var action: NotificationCompat.Action
+    private lateinit var url: String
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -31,8 +33,23 @@ class MainActivity : AppCompatActivity() {
         registerReceiver(receiver, IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE))
 
         custom_button.setOnClickListener {
-            download()
+            if(url == "") {
+                Toast.makeText(this, getString(R.string.no_option_selected), Toast.LENGTH_SHORT).show()
+            } else {
+                download()
+            }
         }
+
+        radioGroup.setOnCheckedChangeListener { _, i ->
+            url = when(i) {
+                R.id.radioButtonGlide -> URL_GLIDE
+                R.id.radioButtonLoadApp -> URL_LOADAPP
+                R.id.radioButtonRetrofit -> URL_RETROFIT
+                else -> ""
+            }
+        }
+
+        url = ""
     }
 
     private val receiver = object : BroadcastReceiver() {
@@ -43,7 +60,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun download() {
         val request =
-            DownloadManager.Request(Uri.parse(URL))
+            DownloadManager.Request(Uri.parse(url))
                 .setTitle(getString(R.string.app_name))
                 .setDescription(getString(R.string.app_description))
                 .setRequiresCharging(false)
@@ -56,8 +73,9 @@ class MainActivity : AppCompatActivity() {
     }
 
     companion object {
-        private const val URL =
-            "https://github.com/udacity/nd940-c3-advanced-android-programming-project-starter/archive/master.zip"
+        private const val URL_GLIDE = "https://github.com/bumptech/glide/archive/refs/heads/master.zip"
+        private const val URL_LOADAPP = "https://github.com/udacity/nd940-c3-advanced-android-programming-project-starter/archive/refs/heads/master.zip"
+        private const val URL_RETROFIT = "https://github.com/square/retrofit/archive/refs/heads/master.zip"
         private const val CHANNEL_ID = "channelId"
     }
 
