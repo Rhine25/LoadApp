@@ -1,17 +1,22 @@
 package com.udacity
 
 import android.app.DownloadManager
+import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.graphics.Color
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.NotificationCompat
+import androidx.core.content.ContextCompat
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.content_main.*
 
@@ -24,6 +29,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var pendingIntent: PendingIntent
     private lateinit var action: NotificationCompat.Action
     private lateinit var url: String
+    private lateinit var project: String
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -37,6 +43,12 @@ class MainActivity : AppCompatActivity() {
                 Toast.makeText(this, getString(R.string.no_option_selected), Toast.LENGTH_SHORT).show()
             } else {
                 download()
+                project = when (url) {
+                    URL_GLIDE -> "Glide"
+                    URL_LOADAPP -> "LoadApp"
+                    URL_RETROFIT -> "Retrofit"
+                    else -> "Unknown"
+                }
             }
         }
 
@@ -50,12 +62,42 @@ class MainActivity : AppCompatActivity() {
         }
 
         url = ""
+
+        notificationManager = ContextCompat.getSystemService(application, NotificationManager::class.java) as NotificationManager
+
+        createChannel(getString(R.string.download_notification_channel_id), getString(R.string.download_notification_channel_name))
     }
 
     private val receiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             val id = intent?.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1)
+            if (id == downloadID) {
+                notificationManager.sendNotification(
+                    "The Project $project repository is downloaded",
+                    if (getDownloadStatus() == DownloadManager.STATUS_SUCCESSFUL) {
+                        "SUCCESS"
+                    } else {
+                        "FAILED"
+                    },
+                    project,
+                    application
+                )
+            }
         }
+    }
+
+    private fun getDownloadStatus(): Int {
+        val downloadManager = getSystemService(DOWNLOAD_SERVICE) as DownloadManager
+
+        val query = DownloadManager.Query()
+        query.setFilterById(downloadID)
+
+        val cursor = downloadManager.query(query)
+        if(cursor.moveToFirst()) {
+            val index = cursor.getColumnIndex(DownloadManager.COLUMN_STATUS)
+            return cursor.getInt(index)
+        }
+        return DownloadManager.STATUS_FAILED
     }
 
     private fun download() {
@@ -68,8 +110,25 @@ class MainActivity : AppCompatActivity() {
                 .setAllowedOverRoaming(true)
 
         val downloadManager = getSystemService(DOWNLOAD_SERVICE) as DownloadManager
-        downloadID =
-            downloadManager.enqueue(request)// enqueue puts the download request in the queue.
+        downloadID = downloadManager.enqueue(request)
+    }
+
+    private fun createChannel(channelId: String, channelName: String) {
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val notificationChannel = NotificationChannel(
+                channelId,
+                channelName,
+                NotificationManager.IMPORTANCE_DEFAULT
+            )
+
+            notificationChannel.enableLights(true)
+            notificationChannel.lightColor = Color.RED
+            notificationChannel.enableVibration(true)
+            notificationChannel.description = "Donwload ready!"
+
+            val notificationManager = application.getSystemService(NotificationManager::class.java)
+            notificationManager.createNotificationChannel(notificationChannel)
+        }
     }
 
     companion object {
