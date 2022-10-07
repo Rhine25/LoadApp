@@ -12,7 +12,6 @@ import android.graphics.Color
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
-import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.NotificationCompat
@@ -135,7 +134,8 @@ class MainActivity : AppCompatActivity() {
         private const val URL_GLIDE = "https://github.com/bumptech/glide/archive/refs/heads/master.zip"
         private const val URL_LOADAPP = "https://github.com/udacity/nd940-c3-advanced-android-programming-project-starter/archive/refs/heads/master.zip"
         private const val URL_RETROFIT = "https://github.com/square/retrofit/archive/refs/heads/master.zip"
-        private const val CHANNEL_ID = "channelId"
+        const val EXTRA_PROJECT = "project"
+        const val EXTRA_STATUS = "status"
     }
 
 }

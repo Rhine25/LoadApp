@@ -12,8 +12,8 @@ private val REQUEST_CODE = 0
 
 fun NotificationManager.sendNotification(messageBody: String, status: String, project: String, applicationContext: Context) {
     val contentIntent = Intent(applicationContext, DetailActivity::class.java)
-    contentIntent.putExtra("status", status)
-    contentIntent.putExtra("project", project)
+    contentIntent.putExtra(MainActivity.EXTRA_STATUS, status)
+    contentIntent.putExtra(MainActivity.EXTRA_PROJECT, project)
 
     val contentPendingIntent = PendingIntent.getActivity(
         applicationContext,
