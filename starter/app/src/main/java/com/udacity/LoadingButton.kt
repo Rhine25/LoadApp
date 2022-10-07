@@ -7,6 +7,7 @@ import android.graphics.Color
 import android.graphics.Paint
 import android.util.AttributeSet
 import android.view.View
+import androidx.core.content.withStyledAttributes
 import kotlin.properties.Delegates
 
 class LoadingButton @JvmOverloads constructor(
@@ -36,9 +37,17 @@ class LoadingButton @JvmOverloads constructor(
         textSize = 55.0f
     }
 
+    private var textColor = 0
+    private var buttonBackgroundColor = 0
+
 
     init {
         isClickable = true
+
+        context.withStyledAttributes(attrs, R.styleable.LoadingButton) {
+            textColor = getColor(R.styleable.LoadingButton_textColor, 0)
+            buttonBackgroundColor = getColor(R.styleable.LoadingButton_backgroundColor, 0)
+        }
 
         animator.repeatCount = 0
         animator.duration = 2000
@@ -73,7 +82,7 @@ class LoadingButton @JvmOverloads constructor(
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
 
-        paint.color = resources.getColor(R.color.colorPrimary)
+        paint.color = buttonBackgroundColor
         canvas.drawRect(0f, 0f, widthSize.toFloat(), heightSize.toFloat(), paint)
 
         paint.color = resources.getColor(R.color.colorPrimaryDark)
@@ -91,7 +100,7 @@ class LoadingButton @JvmOverloads constructor(
             paint
         )
 
-        paint.color = Color.WHITE
+        paint.color = textColor
         canvas.drawText(buttonText, widthSize.toFloat() / 2, (heightSize.toFloat() - (paint.descent() + paint.ascent())) / 2, paint)
     }
 
